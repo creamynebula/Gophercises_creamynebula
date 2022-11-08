@@ -18,6 +18,7 @@ func main() {
 	// parse the command line into the defined flags (o que isso significa???)
 	flag.Parse()
 
+	// abrir o arquivo csv, e lidar com erros
 	file, err := os.Open(*csvFilename)
 	if err != nil {
 		// exit(msg string) imprime uma msg e encerra o programa
@@ -38,10 +39,12 @@ func main() {
 
 	fmt.Printf("\nlines: %s\n", lines)
 
+	// é um jogo de perguntas e respostas, então:
 	problems := parseLines(lines)
 	fmt.Printf("\nproblems: %s\n", problems)
 
-	// timer tem um channel C, que recebe o sinal dps da duration especificada
+	// queremos que o quiz termine quando se esgote um timer.
+	// timer tem um channel C, que recebe o sinal dps da duration especificada.
 	// timer é um *Timer
 	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
 
@@ -65,7 +68,7 @@ func main() {
 		case <-timer.C: // se o timer concluir
 			encerraQuiz(howManyCorrect, len(problems))
 			return // encerra o main, sai do programa!
-		case answer := <-answerCh: // se chegou uma resposta
+		case answer := <-answerCh: // se chegou uma respostat -
 			if answer == p.answer {
 				fmt.Printf("Certa resposta!\n")
 				howManyCorrect++
@@ -74,6 +77,8 @@ func main() {
 
 	} // fim do for
 
+	// se sair do for antes de encerrar o timer,
+	// acabaram as perguntas, então encerra o quiz.
 	encerraQuiz(howManyCorrect, len(problems))
 
 } // fim main
