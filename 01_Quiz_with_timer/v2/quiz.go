@@ -29,9 +29,8 @@ func main() {
 	r := csv.NewReader(file)
 
 	// isso aqui lê o csv e retorna um slice,
-	// aonde cada elemento é um outro slice
-	// contendo o record: 2 elementos (pergunta e resposta)
-	// que tavam separados por vírgula no csv.
+	// aonde cada elemento é um outro slice contendo o record
+	// record: 2 elementos (pergunta e resposta) que tavam separados por vírgula no csv.
 	lines, err := r.ReadAll()
 	if err != nil {
 		exit("Não deu pra parse o arquivo csv que tu mandou")
@@ -45,22 +44,28 @@ func main() {
 	// timer tem um channel C, que recebe o sinal dps da duration especificada
 	// timer é um *Timer
 	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
-	fmt.Printf("\nvalor de *timeLimit: %v", *timeLimit)
-	fmt.Printf("\nvalor de *timer: %v", *timer)
-	fmt.Printf("\nvalor de (*timer).C: %v", (*timer).C)
 
 	howManyCorrect := 0 // counter de qtas respostas foram acertadas
 
-	// imprime o quiz e coleta as respostas
+	// imprime o quiz, coleta as respostas, e coordena com o timer
 	for i, p := range problems {
-		select {
-		case <-timer.C: // se chegar um sinal do channel no timer
-			encerraQuiz(howManyCorrect, len(problems))
-			return // encerra o main, sai do programa!
-		default:
-			fmt.Printf("\nProblema #%d:\n%s = ?\n", i+1, p.question)
+		fmt.Printf("\nProblema #%d:\n%s = ?\n", i+1, p.question)
+		// channel pra sinalizar que uma resposta foi recebida
+		// e transmitir essa resposta
+		answerCh := make(chan string)
+		// chamar uma goroutine pra pegar a resposta, pro input nao blockar
+		// o programa. ou seja, nao blockar o timer!
+		go func() {
 			var answer string
 			fmt.Scanf("%s\n", &answer)
+			answerCh <- answer // envia resposta
+		}()
+
+		select {
+		case <-timer.C: // se o timer concluir
+			encerraQuiz(howManyCorrect, len(problems))
+			return // encerra o main, sai do programa!
+		case answer := <-answerCh: // se chegou uma resposta
 			if answer == p.answer {
 				fmt.Printf("Certa resposta!\n")
 				howManyCorrect++
