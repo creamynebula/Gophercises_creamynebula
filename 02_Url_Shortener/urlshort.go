@@ -1,9 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
@@ -11,8 +12,10 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 		path := r.URL.Path
 		// declarar uma variável 'destination' com um map lookup
 		if destination, ok := pathsToUrls[path]; ok { // se 'ok'
+			// redirecione URL
 			http.Redirect(w, r, destination, http.StatusFound)
-			return // deu bom, já redirecionamos, não queremos chegar no fallback
+			// deu bom, já redirecionamos, não queremos chegar no fallback
+			return
 		}
 		fallback.ServeHTTP(w, r)
 	}
@@ -20,12 +23,20 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 
 func YAMLHandler(yamlBytes []byte, fallback http.Handler) (http.HandlerFunc, error) {
 
+	// vamos ler os yamlBytes, e extrair dele pares {Path, URL}
 	var pathUrls []pathUrl
 	err := yaml.Unmarshal(yamlBytes, &pathUrls)
+
 	if err != nil {
+		fmt.Println("deu ruim no unmarshal")
 		return nil, err
 	}
-	pathsToUrls := map[string]string{}
+
+	pathsToUrls := make(map[string]string)
+	for _, pu := range pathUrls {
+		pathsToUrls[pu.Path] = pu.URL
+	}
+
 	return MapHandler(pathsToUrls, fallback), nil
 }
 
