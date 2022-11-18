@@ -26,14 +26,17 @@ type Option struct {
 	Chapter string `json:"arc"`
 }
 
+var tpl *template.Template
+
 func init() {
-	// renderiza um template default no começo do programa, acho
+	// renderiza o template no começo do programa
 	tpl = template.Must(template.New("Nome do template").Parse(defaultHandlerTemplate))
 }
 
-var tpl *template.Template
-
 // o layout da página do jogo
+// note que ele tem variávies (Title, Paragraphs, Options)
+// o handler é uma Story, que é um map string->Chapter
+// Chapter == Title, Paragraphs, Options
 var defaultHandlerTemplate = `<html>
 
 <head>
@@ -61,6 +64,8 @@ var defaultHandlerTemplate = `<html>
 
 </html>`
 
+// o main implementa as flags, extrai e decodifica as stories que vao alimentar
+// o template, inicia um handler com as stories, e inicia um server com esse handler.
 func main() {
 	// go run . -file=gopher.json -port=3000
 	port := flag.Int("port", 3000, "a porta pra iniciar a app web do jogo de \"escolha sua aventura\"")
@@ -91,6 +96,8 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), handler))
 }
 
+// recebe um arquivo JSON contendo stories, retorna
+// um Story (map[string]Chapter)
 func JsonStory(file io.Reader) (Story, error) {
 	var story Story
 	decoder := json.NewDecoder(file)
@@ -125,8 +132,19 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// "/a-certain-path" -> "a-certain-path"
 	path = path[1:]
 
-	err := tpl.Execute(w, h.s["intro"])
-	if err != nil {
-		panic(err)
+	// se tiver encontrado um chapter com esse path
+	if chapter, ok := h.s[path]; ok {
+		// renderiza o chapter
+		err := tpl.Execute(w, chapter)
+		if err != nil {
+			log.Printf("\ndeu ruim na renderizacao do chapter mano\n")
+			panic(err)
+		}
+		// já se o erro foi nil, achamos o chapter, então bora sair da funcao
+		return
 	}
+
+	// se chegou aqui sem retornar, seu ruim
+	http.Error(w, "não encontramos o chapter T_T", http.StatusNotFound)
+
 }
