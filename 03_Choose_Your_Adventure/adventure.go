@@ -91,7 +91,7 @@ func main() {
 		fmt.Printf("decoded story1:\n\n%+v\n\n", story)
 	}
 
-	handler := NewHandler(story)
+	handler := NewHandler(story, nil)
 	fmt.Printf("Começando o server na porta: %v\n\n", *port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), handler))
 }
@@ -112,14 +112,19 @@ func JsonStory(file io.Reader) (Story, error) {
 
 // retornando uma interface que implementa o método ServeHTTP
 // porque o type Handler é definido assim.
-func NewHandler(s Story) http.Handler {
-	return handler{s}
+func NewHandler(s Story, t *template.Template) http.Handler {
+	if t == nil {
+		// nesse caso façamos t igual àquele template global tpl
+		t = tpl
+	}
+	return handler{s, t}
 }
 
 type handler struct {
 	// handler é um tipo que implementa o método ServeHTTP
 	// e Story é um map[string]Chapter
 	s Story
+	t *template.Template
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
