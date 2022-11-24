@@ -11,6 +11,7 @@ var exampleHtml = `
 <body>
 	<h1>Olá enfermeira!</h1>
 	<a href="/karuta-club">Link pra página do Karuta Club</a>
+	<a href="/animeshadow">Link para a página "The Anime Shadow", do Mateus e do Pedro.</a>
 </body>
 </html>
 `
@@ -22,5 +23,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%v", links)
+	fmt.Printf("\nPrinting links:%v\n", links)
 }
