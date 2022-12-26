@@ -68,7 +68,7 @@ func main() {
 		case <-timer.C: // se o timer concluir
 			encerraQuiz(howManyCorrect, len(problems))
 			return // encerra o main, sai do programa!
-		case answer := <-answerCh: // se chegou uma respostat -
+		case answer := <-answerCh: // se chegou uma resposta
 			if answer == p.answer {
 				fmt.Printf("Certa resposta!\n")
 				howManyCorrect++
