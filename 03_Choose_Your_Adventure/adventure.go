@@ -54,7 +54,7 @@ var defaultHandlerTemplate = `<html>
 // o template, inicia um handler com as stories, e inicia um server com esse handler.
 func main() {
 	// go run . -file=gopher.json -port=3000
-	port := flag.Int("port", 3000, "a porta pra iniciar a app web do jogo de \"escolha sua aventura\"")
+	port := flag.Int("port", 3000, "a porta pra iniciar a app web do jogo de \"escolha sua aventura\". default == 3000")
 	fileName := flag.String("file", "gopher.json", "o arquivo JSON com a historinha do jogo, default == gopher.json")
 	flag.Parse()
 	fmt.Printf("Usando a história do arquivo %v\n\n", *fileName)
