@@ -30,7 +30,7 @@ func main() {
 
 	// isso aqui lê o csv e retorna um slice,
 	// aonde cada elemento é um outro slice
-	// contendo o record: 2 elementos (pergunta e resposta)
+	// contendo o record com 2 elementos, pergunta e resposta,
 	// que tavam separados por vírgula no csv.
 	lines, err := r.ReadAll()
 	if err != nil {
